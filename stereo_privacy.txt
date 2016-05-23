@@ -1,0 +1,57 @@
+STEREOIZER PRIVACY POLICY
+
+===============================================================================
+WHAT INFORMATION IS THERE?
+
+This software alone has no special access to any of your information. However,
+this software is most frequently used in the context of Google Hangouts, which
+provides this software to access to the following elements of information about
+you:
+	* Your full name, as registered with your Google account.
+	* Your locale (or language).
+	* Whether or not you have a microphone and camera installed,
+		* and if so, your video and/or audio feed.
+	* Your Google account icon.
+	* Your Google+ profile information, which includes such things as:
+		* Gender
+		* Occupation
+		* Birthday
+		* Current Location
+		* Relationship Status
+		* See https://developers.google.com/+/api/latest/people#resource for more.
+	* Your gender, as registered with Google+.
+	* Biometric face-tracking and hand-tracking data.
+
+This list may have expanded since this software or document was last updated,
+via an update to the Google Hangouts API. At the time of writing, the above list
+is, to the best knowledge of the developer(s), current.
+
+
+===============================================================================
+WHAT IS DONE WITH THIS INFORMATION?
+
+This software does absolutely nothing with all the above information about you.
+All it does is change the audio levels *you* hear in the Google Hangout.
+
+However, use of this software in the context of Google Hangouts means that
+Google, Inc. may collect information in accordance with their own privacy
+policy (http://www.google.com/policies/privacy/).
+
+Finally, the user of this software should be aware that normal use of this
+software requires one or more downloads from a website. In the normal course of
+servicing such a download, the download server may collect or log the user's
+IP address, geolocation, appropriate cookies, and such other information that
+may or may not be kept securely. The company owning the download service
+(currently Google, Inc) is solely responsible for the security and retention of
+this information, subject again to that entity's own privacy policy.
+
+Therefore, if you are strongly concerned about the security or privacy of the
+aforementioned information, the developer(s) of this software STRONGLY URGE you
+to discontinue using this software. The developer(s) disclaim any
+responsibility or liability for the privacy or security of any personal
+information you expose to this software.
+
+The developer(s) take your informational privacy EXTREMELY SERIOUSLY. We've
+done our best to protect you, but the developers are human beings subject to
+error. If you have ANY concerns, PLEASE create an issue at
+https://code.google.com/p/google-hangouts-mafia/issues/list with the details.

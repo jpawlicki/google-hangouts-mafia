@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Module>
+<!-- Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License
+-->
+	<ModulePrefs title="Hangout Starter">
+		<Require feature="rpc" />
+		<Require feature="views" />
+		<Require feature="locked-domain" />
+	</ModulePrefs>
+	<Content type="html"><![CDATA[
+
+<html>
+<style type="text/css">
+<!--
+body{
+  padding: 0px;
+}
+p {
+  margin-top: 4px;
+}
+#mafiapanel {
+	color: #ffffff;
+	background-color: #440000;
+	width: 100%;
+	height: 55%;
+	margin: 0px;
+	overflow: auto;
+	padding: 2px;
+}
+#townpanel {
+	color: #ffffff;
+	background-color: #000044;
+	width: 100%;
+	height: 55%;
+	margin: 0px;
+	overflow: auto;
+	padding: 2px;
+	display: none;
+}
+#specialpanel {
+  color: #000000;
+  background-color: #ffcc00;
+	width: 100%;
+	height: 30%;
+	margin: 0px;
+	overflow: auto;
+	padding: 2px;
+}
+#timepanel {
+	color: #ffffff;
+	background-color: #000000;
+	height: 10%;
+	margin: 0px;
+	overflow: auto;
+	padding: 2px;
+}
+.centered {
+	text-align: center;
+}
+h3 {
+  text-align: center;
+	margin: 0px;
+}
+h2 {
+  text-align: center;
+	margin: 0px;
+}
+
+#howtoplay {
+  z-index: 5;
+	width: 100%;
+	height: 100%;
+	overflow: auto;
+	padding: 2px;
+	display: none;
+}
+
+#setup {
+  z-index: 4;
+	width: 100%;
+	height:100%;
+}
+
+#optionpanel {
+  height: 5%;
+}
+-->
+</style>
+<body>
+
+<script src="https://hangoutsapi.talkgadget.google.com/hangouts/api/hangout.js?v=1.0" ></script>
+
+<div id="setup">
+	<h3>Mafia</h3>
+	<p>Current players:</p>
+	<ul id="participantlist">
+	</ul>
+	<input id="startbutton" type="button" onclick="schedule(startGame);" value="You need at least 3 players."/>
+	<h4>Preferences</h4>
+	I prefer to be <select><option>Either Mafia or Town</option><option>Mafia</option><option>Townsperson</option></select><br/>
+	<h4>Configuration</h4>
+	Mafia : Townspeople ratio = 1 : 2<br/>
+	Turn length: <select><option>3:00</option><option selected>5:00</option><option>10:00</option><option>15:00</option></select>
+	<h4>Special Roles</h4>
+	<input type="checkbox"/>Doctor<br/>
+	<input type="checkbox"/>Detective<br/>
+</div>
+
+<div id="howtoplay">
+	<h3>How to Play</h3>
+  <p>Players are on two teams: townspeople and mafia. The townspeople do not know who the mafia players are, but the mafia players do.</p>
+	<p>Each turn, the group selects a person to lynch. The goal of the townspeople is to eliminate the members of the mafia.</p>
+	<p>Each turn, the mafia secretly selects a person to murder. Their goal is to eliminate all the townspeople.</p>
+	<p>If a majority vote cannot be reached, nobody is eliminated on that vote.</p>
+	<h3>Tips</h3>
+	<p>Everyone should claim that they are a townsperson.</p>
+	<p>Pay attention to who votes for whom.</p>
+	<h3>Special Roles</h3>
+	<p>If you are playing with special roles, some players will have secret role.</p>
+	<p>Generally, it isn't wise to reveal that they have a special role. However, some roles require them to.</p>
+	<input type="button" value="Return to Game" onClick="document.getElementById('howtoplay').style.display='none';" style="width: 100%"/>
+</div>
+
+<div id="optionpanel">
+	<input type="button" onClick="toggleColors();" value="Show/Hide Colors" style="width:49%; margin:0px;"/>
+	<input type="button" onClick="document.getElementById('howtoplay').style.display='block';" value="How to Play" style="width:49%; margin:0px;"/>
+</div>
+
+<div id="mafiapanel">
+	<h3>You are Mafia!</h3>
+	<p>Do not reveal that you are mafia.</p>
+	<p>Each turn, vote on a person from the list below to lynch. Everyone can see your vote!</p>
+	<p>Each turn, vote on a person from the list below to execute. Mafia members are indicated with a "*".</p>
+	<select id="mafiaselectbox">
+		<option>Name 1</option>
+	</select>
+</div>
+
+<div id="townpanel">
+	<h3>You are a Townsperson!</h3>
+	<p>Each turn, vote on a person from the list below to lynch. Everyone can see your vote!</p>
+	<select id="townselectbox">
+		<option>Name 1</option>
+	</select>
+</div>
+
+<div id="specialpanel">
+	<h3>...and also The Doctor!</h3>
+	<p>Each turn, select a person from the list below. That person is immune to the mafia's attacks.</p>
+	<select id="specialselectbox">
+		<option>Name 1</option>
+	</select>
+</div>
+
+<div id="timepanel">
+	<h2>00:00.00</h2>
+	<p class="centered">seconds remaining in turn</p>
+</div>
+
+<script>
+var gameStarted = "";
+
+function startGame(writes, state) {
+	window.alert("start");
+	if(state["game_started"] != "true") {
+	  window.alert("start2");
+		writes["game_started"] = true;
+		// Select mafia, special roles.
+		var turn_length = state["turn_length"];
+		if(turn_length){
+			writes["turn_length"] = "5";
+			turn_length = 5;
+		}
+		var mafia_frac = state["mafia_frac"];
+		if(mafia_frac){
+			writes["mafia_frac"] = "3";
+			var mafia_frac = 3;
+		}
+		var players = gapi.hangout.getEnabledParticipants();
+		var mafiabin = new Array();
+		var townbin = new Array();
+		var otherbin = new Array();
+		for (index in players){
+			var pref = state[id.toString() + ".mafiapref"];
+			writes[id.toString() + ".ingame"] = "true";
+			var id = players[index].person.id;
+			if(pref == "mafia"){
+				mafiabin.push(players[index]);
+			}else if(pref == "town"){
+				townbin.push(players[index]);
+			}else{
+				otherbin.push(players[index]);
+			}
+		}
+		mafiabin.shuffle();
+		townbin.shuffle();
+		otherbin.shuffle();
+		var num_mafia = players.length / mafia_frac;
+		while(num_mafia > 0){
+			if(mafiabin.length > 0){
+				writes[mafiabin.pop().person.id.toString() + ".mafia"] = "true";
+			}else if(otherbin.length > 0){
+				writes[otherbin.pop().person.id.toString() + ".mafia"] = "true";
+			}else{
+				writes[townbin.pop().person.id.toString() + ".mafia"] = "true";
+			}
+			num_mafia -= 1;
+		}
+	}
+}
+
+function toggleColors() {
+  if(document.getElementById("mafiapanel").style.color=="rgb(0, 0, 0)"){
+		document.getElementById("mafiapanel").style.color="#ffffff";
+		document.getElementById("mafiapanel").style.backgroundColor="#440000";
+		document.getElementById("townpanel").style.color="#ffffff";
+		document.getElementById("townpanel").style.backgroundColor="#000044";
+		document.getElementById("specialpanel").style.color="#000000";
+		document.getElementById("specialpanel").style.backgroundColor="#ffcc00";
+	}else{
+		document.getElementById("mafiapanel").style.color="#000000";
+		document.getElementById("mafiapanel").style.backgroundColor="#ffffff";
+		document.getElementById("townpanel").style.color="#000000";
+		document.getElementById("townpanel").style.backgroundColor="#ffffff";
+		document.getElementById("specialpanel").style.color="#000000";
+		document.getElementById("specialpanel").style.backgroundColor="#ffffff";
+	}
+}
+
+function fillSelectBars(state) {
+  var participants = gapi.hangout.getParticipants();
+	var contents = "<option value=\"\">ABSTAIN</option>";
+	var state = gapi.hangout.data.getState();
+	for(var index in participants){
+		var participant = participants[index];
+		if(participant.hasAppEnabled && state[participant.person.id + ".eliminated"] != "true") {
+			contents += "<option value=\"" + participant.person.id + "\">" + participant.person.displayName + "</option>";
+		}
+	}
+  document.getElementById("mafiaselectbox").innerHTML = contents;
+  document.getElementById("townselectbox").innerHTML = contents;
+  document.getElementById("specialselectbox").innerHTML = contents;
+	document.getElementById("setup").style.display="none";
+}
+
+function updatePersonList(participants) {
+	if(!participants){
+		participants = gapi.hangout.getParticipants();
+	}
+	var contents = "";
+	var sum = 0;
+	for(var index in participants){
+		var participant = participants[index];
+		if(participant.hasAppEnabled) {
+			contents += "<ul>" + participant.person.displayName + "</ul>";
+			sum += 1;
+		}
+	}
+	document.getElementById("participantlist").innerHTML = contents;
+	if(gapi.hangout.data.getState()["game_started"]=="true"){
+		document.getElementById("setup").innerHTML="<h3>Mafia</h3>They started the game without you. :(";
+		return;
+	}
+	if(sum > 2){
+		document.getElementById("startbutton").disabled = false;
+		document.getElementById("startbutton").value = "Start Game";
+	}
+}
+
+// We can't actually guarantee that there aren't races since (unfortunately), we sometimes get out-of-order messages from the server.
+// So, we take a best-effort approach.
+var atomicActions = new Array();
+var prevlockholder = "";
+
+function schedule(closure) {
+	atomicActions.push(closure);
+	// is the state locked?
+	if(gapi.hangout.data.getValue("locked") != "true") {
+		requestLock();
+	}
+}
+
+function releaseLock() {
+	gapi.hangout.data.submitDelta({
+		"locked":"false",
+		"locked_who":""
+	});
+}
+
+function changeListen(delta){
+	if(gameStarted != ""){
+		if(delta.state["game_started"] != ""){
+			if(delta.state[gapi.hangout.getLocalParticipant().person.id.toString() + ".ingame"] == "true"){
+				fillSelectBars(delta.state);
+			}else{
+				document.getElementById("setup").innerHTML="<h3>Mafia</h3>They started the game without you. :(";
+				return;
+			}
+		}
+	}
+	checkLock(delta);
+}
+
+// This could be improved by using adding/removal of keys for locking. Then we don't need local data.
+function checkLock(delta) {
+	document.getElementById("val").innerHTML=JSON.stringify(delta.state);
+	if(delta.state["locked"] == "true"){
+		if(delta.state["locked_who"] == gapi.hangout.getLocalParticipant().person.id.toString() && prevlockholder==""){
+      //I got the lock.
+			var ac = atomicActions; //This is not thread-safe.
+			var writes = {};
+			atomicActions = new Array();
+			for(var index in ac){
+				ac[index](writes,delta.state);
+			}
+			writes["locked"] = "false";
+			writes["locked_who"] = "";
+			//Release lock.
+			gapi.hangout.data.submitDelta(writes);
+		}
+	}else{
+		if(atomicActions.length != 0){
+			requestLock();
+		}
+	}
+	prevlockholder = delta.state.locked_who;
+}
+
+function requestLock() {
+	gapi.hangout.data.submitDelta({
+			"locked_who": gapi.hangout.getLocalParticipant().person.id.toString(),
+			"locked": "true"
+	});
+}
+
+function init() {
+  // When API is ready...
+  gapi.hangout.onApiReady.add(
+      function(eventObj) {
+        if (eventObj.isApiReady) {
+					gapi.hangout.data.onStateChanged.add(changeListen);
+					gapi.hangout.onParticipantsChanged.add(function(delta){ updatePersonList(delta.participants); });
+					gapi.hangout.onEnabledParticipantsChanged.add(function(delta){ updatePersonList(delta.participants); });
+        }
+      });
+}
+
+// Array shuffling.
+Array.prototype.shuffle = function(){
+	for(var i=this.length-1;i>0;i--){
+		var j=Math.floor(Math.random()*(i+1));
+		var tmp=this[i];
+		this[i]=this[j];
+		this[j]=tmp;
+	}
+	return this;
+}
+
+// Wait for gadget to load.
+gadgets.util.registerOnLoadHandler(init);
+</script>
+</body>
+]]>
+</Content>
+</Module>
+

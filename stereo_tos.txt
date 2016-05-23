@@ -1,0 +1,49 @@
+Copyright (c) 2014, Joshua Pawlicki
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+this list of conditions and the following disclaimer in the documentation
+and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+===============================================================================
+TERMS OF SERVICE
+
+By accessing and using this software, you agree to be bound by the following
+terms of service. Additionally, if using this software in the context of Google
+Hangouts or any other hosting service, you agree to be bound by the terms of
+service of Google Hangouts or the other hosting service.
+
+You agree to the following clauses:
+
+1) I, the user of the software, will do my utmost to be a good and moral
+person.
+
+You may be released from the above clause in the instance of meta-ethical or
+normative moral relitivism.
+
+2) I, the user of the software, will not use the software for any purpose that
+inflicts physical, financial, informational, emotional, or any other sort of
+harm on another human being, by express intent or through negligent or
+irresponsible use of the software, expect in the case that doing so will help
+me to win the game that this software implements. Even in this exception case,
+I agree that such use of the software is likely to cause me to lose friends
+and that I and only I am responsible for this.
+
+3) I, the user of the software, will not be a grammar/spelling nazi.

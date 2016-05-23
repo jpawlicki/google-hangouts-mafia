@@ -1,0 +1,772 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Module>
+<!-- Licensed under the BSD 2-Clause License (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://opensource.org/licenses/BSD-2-Clause
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License
+-->
+	<ModulePrefs title="Hangout Starter">
+		<Require feature="rpc" />
+		<Require feature="locked-domain" />
+	</ModulePrefs>
+	<Content type="html"><![CDATA[
+
+<html>
+<style type="text/css">
+<!--
+body{
+  padding: 0px;
+	background-color: #181818;
+}
+p {
+  margin-top: 4px;
+}
+.panel {
+	background-color: #181818;
+	color: #ffffff;
+	width: 100%;
+	height: 90%;
+	margin: 0px;
+	overflow: auto;
+	padding: 3px;
+	display: none;
+}
+h3 {
+  text-align: center;
+	margin: 0px;
+}
+h2 {
+  text-align: center;
+	margin: 0px;
+}
+#howtoplay {
+  z-index: 5;
+}
+#scorebar {
+	background-color: #181818;
+	width: 100%;
+	height: 5%;
+	margin: 0px;
+	padding: 0px;
+}
+.scorespot {
+	width: 20%;
+	float: left;
+	color: #ffffff;
+	margin: 0px;
+	height: 100%;
+	display: inline-block;
+	text-align: center;
+	font-size: 150%;
+}
+-->
+</style>
+<body>
+
+<script src="//plus.google.com/hangouts/_/api/v1/hangout.js" ></script>
+
+<div id="scorebar">
+	<div id="scorebar_0" class="scorespot"></div>
+	<div id="scorebar_1" class="scorespot"></div>
+	<div id="scorebar_2" class="scorespot"></div>
+	<div id="scorebar_3" class="scorespot"></div>
+	<div id="scorebar_4" class="scorespot"></div>
+</div>
+
+<div id="howtoplay" class="panel">
+	<h3>How to Play</h3>
+  <p>Players are on two teams: patriots and spies. Spies pretend to be patriots, and sabotage missions. Spies know who each other are, but patriots don't know which players are spies.</p>
+	<p>Each turn, the leader proposes a team to go on a mission. Players vote on whether the mission team should go.</p>
+	<p>If the team is voted to go, each player on the mission has the option to sabotage the mission, which will cause it to fail.</p>
+	<p>If the team is voted to not go, the next player becomes the leader and may propose a new team. If the team is voted down three times in a row, the patriots lose the entire game.</p>
+	<p>If a mission fails, the spies score a point. Otherwise, the patriots score a point. If the patriots can score 3 points in 5 rounds, the patriots win. Otherwise, the spies win.</p>
+	<h3>Tips</h3>
+	<p>Everyone should claim that they are a patriot, whether or not it is true.</p>
+	<p>Patriots should never sabotage a mission.</p>
+	<input type="button" value="Return to Game" onClick="document.getElementById('howtoplay').style.display='none';" style="width: 100%"/>
+</div>
+
+
+<div id="setup" class="panel">
+	<h3>Spies & Patriots</h3>
+	<p>Current players:</p>
+	<ul id="participantlist">
+	</ul>
+	<input id="startbutton" type="button" onclick="schedule(startGame);" value="You need at least 5 players."/><br/>
+	I prefer to be <select disabled><option>either Spy or Patriot</option><option>a Spy</option><option>a Patriot</option></select><br/>
+	<div id="setup_onfig"></div>
+	<input type="button" value="How to Play" onClick="document.getElementById('howtoplay').style.display='block';" style="width: 100%"/>
+	<br/>Version 2014-02-09T18:11Z-08
+</div>
+
+<div id="spy_recognition" class="panel">
+	<h3>You are a <span name="identity"></span></h3>
+	<p>There are <span name="num_patriots"></span> patriots and <span name="num_spies"></span> spies.</p>
+	<div id="spy_recog_leader" style="display: none">
+		<hr/>
+		<p><b>Read aloud (and obey) the following directions:</b></p>
+		<p>"Everyone close your eyes."<br/>"Spies, open your eyes and silently acknowledge each other."<br/>"Spies, close your eyes."<br/>"Everyone, open your eyes."</p>
+		<input type="button" onclick="schedule(doneReading);" value="Done"/>
+	</div>
+	<div id="spy_recog_spylist">
+		<hr/>
+		The other spies are: <ul name="spylist"></ul>
+	</div>
+	<hr/>
+	Leader order: <ul name="leaderorder"></ul>
+</div>
+
+<div id="team_selection" class="panel">
+	<span name="message"></span>
+	<div id="team_selection_notleader">
+		The leader (<span name="leader"></span>) is selecting a team of <span name="missionsize"></span> players to go on a mission...
+	</div>
+	<div id="team_selection_leader">
+		As the leader, you must select <span name="missionsize"></span> players to go on the mission.
+		<div name="checkboxes">
+		</div>
+		<input type="button" onclick="schedule(teamSelected)" id="team_select_button" value="Done" disabled>
+		<hr/>
+		Leader order: <ul name="leaderorder"></ul>
+	</div>
+</div>
+
+<div id="team_voting" class="panel">
+	The leader (<span name="leader"></span>) has proposed the following team:
+	<ul name="team_list"></ul>
+	<input type="button" onclick="schedule(voteYes)" id="vote_yes_button" value="Yes: this team should go."/>
+	<br/><input type="button" onclick="schedule(voteNo)" id="vote_no_button" value="No, this is a bad team."/>
+	<hr/>
+	Leader order: <ul name="leaderorder"></ul>
+</div>
+
+<div id="mission" class="panel">
+	<span name="message"></span>
+	<div id="mission_on">
+		<p>You are going on the mission. Do you:</p>
+		<br/>
+		<input type="button" onclick="schedule(missionYea)" id="mission_yea_button" value="Pass the mission."/>
+		<br/><br/>
+		<input type="button" onclick="schedule(missionNay)" id="mission_nay_button" value="Sabotage the mission!"/>
+	</div>
+	<div id="mission_off">
+		The mission is in progress... just wait.
+	</div>
+</div>
+
+<div id="game_over" class="panel">
+	The game is over! The <span name="victors"></span> are triumphant!
+	<ul name="identities"></ul>
+	<input type="button" onclick="schedule(restartGame);" value="New Game"/>
+</div>
+
+<div id="left_out" class="panel">
+	<h3>Spies & Patriots</h3>
+	They started the game without you. :'(
+</div>
+
+<div id="identity" class="panel" style="height: 5%;">You are a <span name="identity"></span>.</div>
+
+<script>
+/**
+ * Game Shared State
+ * State is one of "" (Lobby), "setup" (Lobby), "spy_recognition", "team_proposal", "team_vote", "mission".
+ * Each player also has a voting state; when all players have voted, the game moves on to the next step.
+ */
+
+// ============== GAME RULES
+var spies=new Array();
+spies[1]=1;
+spies[3]=1;
+spies[5]=2;
+spies[6]=2;
+spies[7]=3;
+spies[8]=3;
+spies[9]=3;
+spies[10]=4;
+
+var missions=new Array();
+missions[0]=new Array();
+missions[1]=new Array();
+missions[2]=new Array();
+missions[3]=new Array();
+missions[4]=new Array();
+missions[0][1] =1;
+missions[0][3] =2;
+missions[0][5] =2;
+missions[0][5] =2;
+missions[0][6] =2;
+missions[0][7] =2;
+missions[0][8] =3;
+missions[0][9] =3;
+missions[0][10]=3;
+missions[1][1] =1;
+missions[1][3] =2;
+missions[1][5] =3;
+missions[1][6] =3;
+missions[1][7] =3;
+missions[1][8] =4;
+missions[1][9] =4;
+missions[1][10]=4;
+missions[2][1] =1;
+missions[2][3] =2;
+missions[2][5] =2;
+missions[2][6] =4;
+missions[2][7] =3;
+missions[2][8] =4;
+missions[2][9] =4;
+missions[2][10]=4;
+missions[3][1] =1;
+missions[3][3] =2;
+missions[3][5] =3;
+missions[3][6] =3;
+missions[3][7] =4;
+missions[3][8] =5;
+missions[3][9] =5;
+missions[3][10]=5;
+missions[4][1] =1;
+missions[4][3] =2;
+missions[4][5] =3;
+missions[4][6] =4;
+missions[4][7] =4;
+missions[4][8] =5;
+missions[4][9] =5;
+missions[4][10]=5;
+
+var specialmissions=new Array();
+specialmissions[0]=new Array();
+specialmissions[1]=new Array();
+specialmissions[2]=new Array();
+specialmissions[3]=new Array();
+specialmissions[4]=new Array();
+
+specialmissions[3][7]=true;
+specialmissions[3][8]=true;
+specialmissions[3][9]=true;
+specialmissions[3][10]=true;
+
+
+// ============== STATE FUNCTIONS
+
+var active_element=document.getElementById("setup");
+function changeState(state) {
+	if (state["state"] == "setup") {
+		hide("identity");
+		hide("left_out");
+		clearScore();
+		var n_active_element = document.getElementById("setup");
+		n_active_element.style.display="block";
+		active_element.style.display="none";
+		active_element = n_active_element;
+		prev_state=state["state"];
+	} else {
+		colorScore(state);
+		if(inGame(state)) {
+			hide("left_out");
+			show("identity");
+			var n_active_element;
+			if (state["state"]=="spy_recognition") {
+				n_active_element = document.getElementById("spy_recognition");
+				if (state[me() + ".spy"]=="true") {
+					show("spy_recog_spylist");
+					fill("identity", "spy");
+				} else {
+					hide("spy_recog_spylist");
+					fill("identity", "patriot");
+				}
+				if (state["leader"] == me()) {
+					show("spy_recog_leader");
+				} else {
+					hide("spy_recog_leader");
+				}
+				var text = "";
+				var spytext = "";
+				var players = JSON.parse(state["leader_order"]);
+				for (var i = 0; i < players.length; i++) {
+					text += "<li>" + players[i].person.displayName + "</li>";
+					if (state[players[i].person.id.toString() + ".spy"] == "true") {
+						spytext += "<li>" + players[i].person.displayName + "</li>";
+					}
+				}
+				fill("spylist", spytext);
+				fill("leaderorder", text);
+				fill("num_spies", spies[parseInt(state["num_players"])].toString());
+				fill("num_patriots", (parseInt(state["num_players"]) - spies[parseInt(state["num_players"])]).toString());
+			} else if (state["state"]=="team_selection") {
+				n_active_element = document.getElementById("team_selection");
+				if (state["leader"] == me()) {
+					show("team_selection_leader");
+					hide("team_selection_notleader");
+				} else {
+					hide("team_selection_leader");
+					show("team_selection_notleader");
+				}
+				fill("message", state["message"]);
+				fill("leader", getName(state["leader"]));
+				fill("missionsize", missions[parseInt(state["mission"])][parseInt(state["num_players"])].toString());
+				var text = "";
+				var players = gapi.hangout.getEnabledParticipants();
+				for (var i = 0; i < players.length; i++) {
+					if (state[players[i].person.id.toString() + ".ingame"] == "true") {
+						text+="<br/><input type=\"checkbox\" onchange=\"schedule(checkboxed)\" name=\"team_select\" value=\"" + players[i].person.id.toString() + "\"/>" + players[i].person.displayName;
+					}
+				}
+				fill("checkboxes", text);
+			} else if (state["state"] == "team_voting") {
+				document.getElementById("vote_yes_button").disabled = false;
+				document.getElementById("vote_no_button").disabled = false;
+				n_active_element = document.getElementById("team_voting");
+				fill("leader", getName(state["leader"]));
+				var text = "";
+				var players = gapi.hangout.getEnabledParticipants();
+				for (var i = 0; i < players.length; i++) {
+					if (state[players[i].person.id.toString() + ".on_mission"] == "true") {
+						text+="<li>" + getName(players[i].person.id) + "</li>";
+					}
+				}
+				fill("team_list", text);
+			} else if (state["state"] == "game_over") {
+				n_active_element = document.getElementById("game_over");
+				if (state["victory"] == "patriot") {
+					fill("victors", "patriots");
+				} else {
+					fill("victors", "spies");
+				}
+				var players = gapi.hangout.getEnabledParticipants();
+				var text = "";
+				for (var i = 0; i < players.length; i++) {
+					text += "<li>" + players[i].person.displayName + " was a ";
+					if (state[players[i].person.id.toString() + ".spy"]) {
+						text += "spy!";
+					} else {
+						text += "patriot.";
+					}
+				}
+				fill("identities", text);
+			} else if (state["state"] == "mission") {
+				document.getElementById("mission_yea_button").disabled = false;
+				document.getElementById("mission_nay_button").disabled = false;
+				n_active_element = document.getElementById("mission");
+				fill("message", state["message"]);
+				if (state[me() + ".on_mission"] == "true") {
+					show("mission_on");
+					hide("mission_off");
+				} else {
+					hide("mission_on");
+					show("mission_off");
+				}
+			}
+			n_active_element.style.display="block";
+			active_element.style.display="none";
+			active_element = n_active_element;
+			prev_state=state["state"];
+		}
+	}
+}
+
+function updatePersonList(participants) {
+	var state = gapi.hangout.data.getState();
+	if (state["state"] && !inGame(state) && state["state"]!="setup") {
+		show("left_out");
+		hide("setup");
+		return;
+	}
+	if(!participants){
+		participants = gapi.hangout.getParticipants();
+	}
+	var contents = "";
+	var sum = 0;
+	for(var index in participants){
+		var participant = participants[index];
+		if(participant.hasAppEnabled) {
+			contents += "<ul>" + participant.person.displayName + "</ul>";
+			sum += 1;
+		}
+	}
+	document.getElementById("participantlist").innerHTML = contents;
+	if(sum >= 5 || sum == 1){
+		document.getElementById("startbutton").disabled = false;
+		document.getElementById("startbutton").value = "Start Game";
+	} else {
+		document.getElementById("startbutton").disabled = true;
+		document.getElementById("startbutton").value = "You need at least 5 players.";
+	}
+}
+
+function startGame(writes, state) {
+	if(!state["state"] || state["state"] == "setup") {
+		writes["leader"] = me();
+		writes["state"] = "spy_recognition";
+		writes["mission"] = "0";
+		writes["message"] = "";
+		// Select spies.
+		var players = gapi.hangout.getEnabledParticipants();
+		var spybin = new Array();
+		var resistbin = new Array();
+		var otherbin = new Array();
+		writes["num_players"] = players.length.toString();
+		var leader_order = players.shuffle();
+		var i = 0;
+		for (i = 0; i < leader_order.length; i++) {
+			if (leader_order[i].person.id.toString() == me()) {
+				break;
+			}
+		}
+		writes["leader_order"] = JSON.stringify(leader_order.rotate(i));
+
+		for (var index=0; index < players.length; index++){
+			var id = players[index].person.id;
+			writes[id.toString() + ".ingame"] = "true";
+			var pref = state[id.toString() + ".spypref"];
+			if(pref == "spy"){
+				spybin.push(players[index]);
+			}else if(pref == "resist"){
+				resistbin.push(players[index]);
+			}else{
+				otherbin.push(players[index]);
+			}
+		}
+		spybin.shuffle();
+		resistbin.shuffle();
+		otherbin.shuffle();
+		var num_spies = spies[players.length];
+		while(num_spies > 0){
+			if(spybin.length > 0){
+				writes[spybin.pop().person.id.toString() + ".spy"] = "true";
+			}else if(otherbin.length > 0){
+				writes[otherbin.pop().person.id.toString() + ".spy"] = "true";
+			}else{
+				writes[resistbin.pop().person.id.toString() + ".spy"] = "true";
+			}
+			num_spies -= 1;
+		}
+	} else {
+		window.alert("STATE: " + state["state"]);
+	}
+}
+
+function doneReading(writes, state) {
+	writes["state"] = "team_selection";
+}
+
+function checkboxed(writes, state) {
+	var checkboxes = document.getElementsByName("team_select");
+	var count = 0;
+	for (var i = 0; i < checkboxes.length; i++) {
+		if (checkboxes[i].checked) {
+			count += 1;
+		}
+	}
+	if (count == missions[parseInt(state["mission"])][parseInt(state["num_players"])]) {
+		document.getElementById("team_select_button").disabled = false;
+	} else {
+		document.getElementById("team_select_button").disabled = true;
+	}
+}
+
+function teamSelected(writes, state) {
+	document.getElementById("team_select_button").disabled = true;
+	writes["state"] = "team_voting";
+	var checkboxes = document.getElementsByName("team_select");
+	for (var i = 0; i < checkboxes.length; i++) {
+		writes[checkboxes[i].value + ".vote"] = "";
+		if (checkboxes[i].checked) {
+			checkboxes[i].checked = false;
+			writes[checkboxes[i].value + ".on_mission"] = "true";
+			writes[checkboxes[i].value + ".mission_vote"] = "";
+		} else {
+			writes[checkboxes[i].value + ".on_mission"] = "false";
+		}
+	}
+}
+
+function voteYes(writes, state) {
+	document.getElementById("vote_yes_button").disabled = true;
+	document.getElementById("vote_no_button").disabled = true;
+	writes[me() + ".vote"] = "yea";
+}
+
+function voteNo(writes, state) {
+	document.getElementById("vote_yes_button").disabled = true;
+	document.getElementById("vote_no_button").disabled = true;
+	writes[me() + ".vote"] = "nay";
+}
+
+function checkVotes(writes, state) {
+	var players = gapi.hangout.getEnabledParticipants();
+	var yeas = 0;
+	var nays = 0;
+	for (var i = 0; i < players.length; i++) {
+		if (state[players[i].person.id.toString() + ".ingame"] == "true") {
+			var vote = state[players[i].person.id.toString() + ".vote"];
+			if (vote == "" || !vote) {
+				return;
+			} else if (vote == "yea") {
+				yeas++;
+			} else if (vote == "nay") {
+				nays++;
+			}
+		}
+	}
+	if(yeas > nays) {
+		missionGo(writes, state, yeas, nays);
+	} else {
+		voteFailed(writes, state, yeas, nays);
+	}
+}
+
+function voteFailed(writes, state, yeas, nays) {
+	var fails = 0;
+	if (state["vote_fails"]) {
+		fails = parseInt(state["vote_fails"]);
+	}
+	fails++;
+	writes["vote_fails"] = fails.toString();
+	if (fails >= 3) {
+		writes["victory"] = "spy";
+		writes["state"] = "game_over";
+		writes["message"] = "There were three consecutive failed team selection votes.";
+		return;
+	}
+	writes["state"] = "team_selection";
+	writes["leader"] = getNextLeader(state);
+	writes["message"] = "The vote failed, " + nays + " to " + yeas + ".";
+}
+
+function missionGo(writes, state, yeas, nays) {
+	writes["state"] = "mission";
+	writes["vote_fails"] = "0";
+	writes["message"] = "The vote passed, " + yeas + " to " + nays + ".";
+}
+
+function missionYea(writes, state) {
+	document.getElementById("mission_yea_button").disabled = true;
+	document.getElementById("mission_nay_button").disabled = true;
+	writes[me() + ".mission_vote"] = "yea";
+}
+
+function missionNay(writes, state) {
+	document.getElementById("mission_yea_button").disabled = true;
+	document.getElementById("mission_nay_button").disabled = true;
+	writes[me() + ".mission_vote"] = "nay";
+}
+
+function checkMission(writes, state) {
+	var players = gapi.hangout.getEnabledParticipants();
+	var yeas = 0;
+	var nays = 0;
+	var mission = parseInt(state["mission"]);
+	for (var i = 0; i < players.length; i++) {
+		if (state[players[i].person.id.toString() + ".ingame"] == "true" && state[players[i].person.id.toString() + ".on_mission"] == "true") {
+			var vote = state[players[i].person.id.toString() + ".mission_vote"];
+			if (vote == "" || !vote) {
+				return;
+			} else if (vote == "yea") {
+				yeas++;
+			} else if (vote == "nay") {
+				nays++;
+			}
+		}
+	}
+	var victs_spy = 0;
+	var victs_resist = 0;
+	if (nays < 1 || (specialmissions[mission][parseInt(state["num_players"])] && nays < 2)) {
+		writes["message"] = "The mission passed, with " + nays + " saboteur" + (nays != 1 ? "s." : ".");
+		writes["score_" + mission.toString()] = "patriot";
+		victs_resist++;
+	} else {
+		writes["message"] = "The mission failed, with " + nays + " saboteur" + (nays != 1 ? "s." : ".");
+		writes["score_" + mission.toString()] = "spy";
+		victs_spy++;
+	}
+	for (var i = 0; i < mission; i++) {
+		if (state["score_" + i.toString()] == "spy") {
+			victs_spy++;
+		} else {
+			victs_resist++;
+		}
+	}
+	writes["mission"] = (mission + 1).toString();
+	if (victs_resist >= 3) {
+		writes["victory"] = "patriot";
+		writes["state"] = "game_over";
+	} else if (victs_spy >= 3) {
+		writes["victory"] = "spy";
+		writes["state"] = "game_over";
+	} else {
+		writes["state"] = "team_selection";
+		writes["leader"] = getNextLeader(state);
+	}
+}
+
+function restartGame(writes, state) {
+	for (var key in state) {
+		if (state.hasOwnProperty(key)) {
+			writes[key] = "";
+		}
+	}
+	writes["state"] = "setup";
+}
+
+
+// ============== UTILITY FUNCTIONS
+
+function printState() {
+	window.alert(JSON.stringify(gapi.hangout.data.getState()));
+}
+
+function fill(name, text) {
+	var elements = document.getElementsByName(name);
+	for (var i = 0; i < elements.length; i++) {
+		elements[i].innerHTML = text;
+	}
+}
+
+function show(id) {
+	document.getElementById(id).style.display="block";
+}
+
+function hide(id) {
+	document.getElementById(id).style.display="none";
+}
+
+function colorScore(state) {
+	var mission = parseInt(state["mission"]);
+	var num_players = parseInt(state["num_players"]);
+	for (var i = 0; i < 5; i++) {
+		var cell = document.getElementById("scorebar_" + i.toString());
+		if (i < mission) {
+			if (state["score_" + i.toString()] == "spy") {
+				cell.style.backgroundColor="#FF0000";
+			} else {
+				cell.style.backgroundColor="#0000FF";
+			}
+		}
+		var text = missions[i][num_players].toString();
+		if (specialmissions[i][num_players] == true) {
+			text += "*";
+		}
+		cell.innerHTML = text;
+	}
+}
+
+function clearScore() {
+	for (var i = 0; i < 5; i++) {
+		var doc = document.getElementById("scorebar_" + i.toString());
+		doc.style.backgroundColor="#181818";
+		doc.innerHTML= "";
+	}
+}
+
+function getName(id) {
+	var players = gapi.hangout.getEnabledParticipants();
+	for (var i = 0; i < players.length; i++) {
+		if (players[i].person.id.toString() == id) {
+			return players[i].person.displayName;
+		}
+	}
+	return "<<ERROR>>";
+}
+
+function getNextLeader(state) {
+	var players = JSON.parse(state["leader_order"]);
+	var next = false;
+	for (var i = 0; i < players.length; i++) {
+		var id = players[i].person.id.toString();
+		if (state[id + ".ingame"] == "true") {
+			if (next) {
+				return id;
+			}
+			if (state["leader"] == id) {
+				next = true;
+			}
+		}
+	}
+	return players[0].person.id.toString();
+}
+
+function inGame(state) {
+	return state[me() + ".ingame"] == "true";
+}
+
+function me() {
+	return gapi.hangout.getLocalParticipant().person.id.toString();
+}
+
+var prev_state="setup";
+function changeListen(delta){
+	if(delta.state["state"] && delta.state["state"]!=prev_state) {
+		changeState(delta.state);
+	} else if (delta.state["state"] == "team_voting" && delta.state["leader"] == me()) {
+		schedule(checkVotes);
+	} else if (delta.state["state"] == "mission" && delta.state["leader"] == me()) {
+		schedule(checkMission);
+	}
+}
+
+function init() {
+  // When API is ready...
+  gapi.hangout.onApiReady.add(
+      function(eventObj) {
+        if (eventObj.isApiReady) {
+					gapi.hangout.data.onStateChanged.add(changeListen);
+					gapi.hangout.onParticipantsChanged.add(function(delta){ updatePersonList(delta.participants); });
+					gapi.hangout.onEnabledParticipantsChanged.add(function(delta){ updatePersonList(delta.participants); });
+					document.getElementById("setup").style.display="block";
+					var state = gapi.hangout.data.getState();
+					if (state["state"]) {
+						changeState(state);
+					} else {
+						updatePersonList();
+					}
+        }
+      });
+}
+
+// Array shuffling.
+Array.prototype.shuffle = function() {
+	for(var i=this.length-1; i>0; i--){
+		var j=Math.floor(Math.random()*(i+1));
+		var tmp=this[i];
+		this[i]=this[j];
+		this[j]=tmp;
+	}
+	return this;
+}
+
+// Array rotation.
+Array.prototype.rotate = function(num) {
+	var z = new Array();
+	for (var i=num; i < this.length; i++) {
+		z.push(this[i]);
+	}
+	for (var i=0; i < num; i++) {
+		z.push(this[i]);
+	}
+	for (var i=0; i < this.length; i++) {
+		this[i] = z[i];
+	}
+	return this;
+}
+
+function schedule(func) {
+	var writes = {};
+	func(writes, gapi.hangout.data.getState());
+	gapi.hangout.data.submitDelta(writes);
+}
+
+// Wait for gadget to load.
+gadgets.util.registerOnLoadHandler(init);
+</script>
+</body>
+]]>
+</Content>
+</Module>
+

@@ -1,0 +1,73 @@
+SPIES & PATRIOTS PRIVACY POLICY
+
+===============================================================================
+WHAT INFORMATION IS THERE?
+
+This software alone has no special access to any of your information. However,
+this software is most frequently used in the context of Google Hangouts, which
+provides this software to access to the following elements of information about
+you:
+	* Your full name, as registered with your Google account.
+	* Your locale (or language).
+	* Whether or not you have a microphone and camera installed,
+		* and if so, your video and/or audio feed.
+	* Your Google account icon.
+	* Your Google+ profile information, which includes such things as:
+		* Gender
+		* Occupation
+		* Birthday
+		* Current Location
+		* Relationship Status
+		* See https://developers.google.com/+/api/latest/people#resource for more.
+	* Your gender, as registered with Google+.
+	* Biometric face-tracking and hand-tracking data.
+
+This list may have expanded since this software or document was last updated,
+via an update to the Google Hangouts API. At the time of writing, the above list
+is, to the best knowledge of the developer(s), current.
+
+
+===============================================================================
+WHAT IS DONE WITH THIS INFORMATION?
+
+This software (Spies & Patriots) does not expressly collect *any* information
+about you or your machine. This means that the developers do not collect
+information about your machine, your personal identity, audio or video feeds,
+and so on.
+
+However, use of this software in the context of Google Hangouts means that
+Google, Inc. may collect information in accordance with their own privacy
+policy (http://www.google.com/policies/privacy/). Additionally, in the
+normal use of this software, it is necessary to distribute information to
+other participants of the game, including the game state (which includes
+such information as your Google+ account name, your Google Hangouts audio/
+video feed, your Google Hangouts identity, and so forth). These other
+participants are not bound by this privacy policy and may record or distribute
+this information, possibly without your knowledge or permission, in accordance
+to local law.
+
+Additionally, this information may not be encrypted securely during
+transmission. If this is the case, a third party may be able to access this
+information, record and/or distribute it. The developer(s) again disclaim any
+responsibility for information you choose to transmit by using this app, even
+in the case that this is due to the negligance or error of the developers in
+choosing a transmission medium.
+
+Finally, the user of this software should be aware that normal use of this
+software requires one or more downloads from a website. In the normal course of
+servicing such a download, the download server may collect or log the user's
+IP address, geolocation, appropriate cookies, and such other information that
+may or may not be kept securely. The company owning the download service
+(currently Google, Inc) is solely responsible for the security and retention of
+this information, subject again to that entity's own privacy policy.
+
+Therefore, if you are strongly concerned about the security or privacy of the
+aforementioned information, the developer(s) of this software STRONGLY URGE you
+to discontinue using this software. The developer(s) disclaim any
+responsibility or liability for the privacy or security of any personal
+information you expose to this software.
+
+The developer(s) take your informational privacy EXTREMELY SERIOUSLY. We've
+done our best to protect you, but the developers are human beings subject to
+error. If you have ANY concerns, PLEASE create an issue at
+https://code.google.com/p/google-hangouts-mafia/issues/list with the details.

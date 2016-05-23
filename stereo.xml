@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Module>
+<!-- Licensed under the BSD 2-Clause License (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://opensource.org/licenses/BSD-2-Clause
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License
+-->
+	<ModulePrefs title="Hangout Starter">
+		<Require feature="rpc" />
+		<Require feature="locked-domain" />
+	</ModulePrefs>
+	<Content type="html"><![CDATA[
+
+<html>
+<style type="text/css">
+<!--
+body{
+  padding: 0px;
+	background-color: #181818;
+}
+.panel {
+	background-color: #181818;
+	color: #ffffff;
+	width: 100%;
+	height: 100%;
+	margin: 0px;
+	overflow: auto;
+	padding: 3px;
+}
+td {
+	color: #ffffff;
+}
+-->
+</style>
+<body>
+
+<script src="https://hangoutsapi.talkgadget.google.com/hangouts/api/hangout.js?v=1.0" ></script>
+
+<script>
+stereo_on = true;
+
+function toggle() {
+	stereo_on = !stereo_on;
+	if (stereo_on) {
+		document.getElementById("toggle").value="Disable";
+	} else {
+		document.getElementById("toggle").value="Enable";
+	}
+	balance(gapi.hangout.getParticipants());
+}
+
+function getLevels(right) {
+	return [Math.sin((1 - right) * Math.PI / 2), Math.sin(right * Math.PI / 2)];
+}
+
+function balance(participants) {
+	var count = participants.length - 1;
+	var num = 0;
+	var levels = [];
+	var text = "";
+	if (count == 0) {
+		return;
+	}
+	if (count > 1) {
+		for (var i = 0; i < participants.length; i++) {
+			if (participants[i].id == gapi.hangout.getLocalParticipant().id) {
+				continue;
+			}
+			levels[num] = {participant: participants[i].id, levels: getLevels(num / (count - 1))};
+			if (!stereo_on) {
+				levels[num].levels = [1, 1];
+			}
+			text += "<tr><td>" + participants[i].person.displayName + "</td><td>L: " + levels[num].levels[0].toString() + ", R: " + levels[num].levels[1].toString() + "</td></tr>";
+			num++;
+		}
+	} else {
+		levels[0] = {participant: participants[0].id, levels: [1, 1]};
+	}
+	for(var i = 0; i < levels.length; i++) {
+		gapi.hangout.av.setParticipantAudioLevel(levels[i].participant, levels[i].levels);
+	}
+	document.getElementById("debug").innerHTML = text;
+}
+
+function init() {
+  // When API is ready...
+  gapi.hangout.onApiReady.add(
+      function(eventObj) {
+        if (eventObj.isApiReady) {
+					gapi.hangout.onParticipantsChanged.add(function(delta){ balance(delta.participants); });
+					balance(gapi.hangout.getParticipants());
+        }
+      });
+}
+
+// Wait for gadget to load.
+gadgets.util.registerOnLoadHandler(init);
+</script>
+
+<div class="panel">
+	Audio-locationization system active.
+	<br/><input id="toggle" type="button" value="Disable" onclick="toggle();"/>
+	<br/><table id="debug">
+	</table>
+</div>
+</body>
+]]>
+</Content>
+</Module>
+
